@@ -8,7 +8,8 @@ class AnotacaoHelper {
   static final String idColuna = "id";
   static final String tituloColuna = "titulo";
   static final String descricaoColuna = "descricao";
-  static final String dataColuna = "data";
+  static final String dataCColuna = "dataC";
+  static final String dataAColuna = "dataA";
   static final String nomeTabela = "anotacao";
   static final AnotacaoHelper _anotacaoHelper = AnotacaoHelper._internal();
   Database? _db;
@@ -45,6 +46,15 @@ class AnotacaoHelper {
   return anotacoes;
 
   }
+  Future<int?> atualizarAnotacao(Anotacao? anotacao) async{
+    var bancoDados = await db;
+      return await bancoDados?.update(nomeTabela,
+        anotacao!.toMap(),
+        where: "id= ?",
+        whereArgs: [anotacao.id]);
+  }
+
+
   Future<int?> savarAnotacao(Anotacao anotacao) async {
     try {
       var bancoDados = await db;
@@ -67,7 +77,9 @@ class AnotacaoHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         titulo TEXT,
         descricao TEXT,
-        data DATETIME
+        dataC DATETIME,
+        dataA DATETIME
       )    ''');
   }
+
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:appminhasanotacoes/model/Anotacao.dart';
 import 'package:appminhasanotacoes/helper/AnotacaoHelper.dart';
+import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -12,7 +13,6 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   TextEditingController _tituloController = TextEditingController();
   TextEditingController _descricaoController = TextEditingController();
-
   var _db = AnotacaoHelper();
   List<Anotacao> _anotacoes = [];
 
@@ -27,14 +27,12 @@ class _HomeState extends State<Home> {
     if (anotacao == null) {
       _tituloController.text = "";
       _descricaoController.text = "";
-
       textoSalvarAtualizar = "Salvar";
     } else {
-      _tituloController.text = anotacao.titulo.toString();
-      _descricaoController.text = anotacao.descricao.toString();
+      _tituloController.text = anotacao.titulo ?? '';
+      _descricaoController.text = anotacao.descricao ?? '';
       textoSalvarAtualizar = "Atualizar";
     }
-
     showDialog(
       context: context,
       builder: (context) {
@@ -69,7 +67,7 @@ class _HomeState extends State<Home> {
             ),
             TextButton(
               onPressed: () {
-                _savarAtualizarAnotacao(anotacaoSelecionada: anotacao!);
+                _savarAtualizarAnotacao(anotacaoSelecionada: anotacao);
                 Navigator.pop(context);
               },
               child: Text(textoSalvarAtualizar),
@@ -80,7 +78,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  @override
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,76 +99,72 @@ class _HomeState extends State<Home> {
                 child: ListTile(
                   title: RichText(
                     text: TextSpan(
-                      style: TextStyle(
-                        fontSize: 16.0, // Tamanho da fonte padrão
-                        color: Colors.black, // Cor padrão do texto
+                        style: TextStyle(
+                          fontSize: 16.0, // Tamanho da fonte padrão
+                          color: Colors.black, // Cor padrão do texto
+                        ),
+                        children: <TextSpan>[
+                    // Verifica se dataA não é nulo
+                    if (anotacao.dataA != null)
+                        TextSpan(
+                      text: "${anotacao.dataC} - ${anotacao.dataA}\n",
                       ),
-                      children: <TextSpan>[
+                      if(anotacao.dataA == null)
                         TextSpan(
-                          text:
-                              "${anotacao.dataCriacao}\n", // Parte do texto antes do título
-                        ),
-                        TextSpan(
-                          text: "${anotacao.titulo}",
-                          style: TextStyle(
-                            fontWeight:
-                                FontWeight.bold, // Torna o título em negrito
-                          ),
-                        ),
-                      ],
+                        text: "${anotacao.dataC}\n",
+                      ),
+                  TextSpan(
+                    text: "${anotacao.titulo}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold, // Torna o título em negrito
                     ),
-                  ),
-                  subtitle: Text("${anotacao.descricao}"),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          _exibirTelacadastro(anotacao: anotacao);
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.only(right: 16),
-                          child: Icon(
-                            Icons.edit,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          //todo falta
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.only(right: 0),
-                          child: Icon(
-                            Icons.remove_circle,
-                            color: Colors.redAccent,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
+                ],
+              ),
+              ),
+              subtitle: Text("${anotacao.descricao}"),
+              trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+              GestureDetector(
+              onTap: () {
+              _exibirTelacadastro(anotacao: anotacao);
+              },
+              child: Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: Icon(
+              Icons.edit,
+              color: Colors.green,
+              ),
+              ),
+              ),
+              GestureDetector(
+              onTap: () {
+              //todo falta
+              },
+              child: Padding(
+              padding: EdgeInsets.only(right: 0),
+              child: Icon(
+              Icons.remove_circle,
+              color: Colors.redAccent,
+              ),
+              ),
+              ),
+              ],
+              ),
+              ),
               );
             },
           ),
-          // Coluna para posicionar o botão flutuante no final
-          Positioned(
-            bottom: 16.0,
-            right: 16.0,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                FloatingActionButton(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  child: Icon(Icons.add),
-                  onPressed: _exibirTelacadastro,
-                ),
-              ],
-            ),
-          ),
+
         ],
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        child: Icon(Icons.add),
+        onPressed: _exibirTelacadastro,
       ),
     );
   }
@@ -186,43 +180,34 @@ class _HomeState extends State<Home> {
     setState(() {
       _anotacoes = listaTemporaria;
     });
-    print("Lista de anotações:");
-
-    for (var anotacao in _anotacoes) {
-      print("Título: ${anotacao.titulo},"
-          " Descrição: ${anotacao.descricao},"
-          " Data: ${anotacao.dataCriacao}");
-    }
   }
 
   void _savarAtualizarAnotacao({Anotacao? anotacaoSelecionada}) async {
     String titulo = _tituloController.text;
     String descricao = _descricaoController.text;
-    String dataAtualizada = _descricaoController.text;
+    String data = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+    Anotacao anotacao = Anotacao(titulo, descricao, data);
 
-
-    // Método alternativo para formatar a data
-    String data = '${DateTime.now().day}'
-        '/${DateTime.now().month.toString().padLeft(2, '0')}'
-        '/${DateTime.now().year.toString().padLeft(2, '0')}'
-        '  Horas: ${DateTime.now().hour.toString().padLeft(2, '0')}'
-        ':${DateTime.now().minute.toString().padLeft(2, '0')}';
-
-
-    if(anotacaoSelecionada == null){
-      Anotacao anotacao = Anotacao( titulo, descricao, data,);
-      int? resultado = await _db.savarAnotacao(anotacao);
-    }else{//atualizar
+    if (anotacaoSelecionada == null) {
+      int? id = await _db.savarAnotacao(anotacao);
+    } else {
       anotacaoSelecionada.titulo = titulo;
       anotacaoSelecionada.descricao = descricao;
-      anotacaoSelecionada.dataCriacao = dataAtualizada;
-    }
 
+      // Mantenha a dataC como está, não atualize
+      // anotacaoSelecionada.dataC = anotacao.dataC;
+
+      // Atualize apenas a dataA
+      anotacaoSelecionada.dataA = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+
+      int? resultado = await _db.atualizarAnotacao(anotacaoSelecionada);
+    }
 
     _tituloController.clear();
     _descricaoController.clear();
 
-    // Após salvar a anotação, atualize a lista de anotações
+    // Atualize a lista de anotações após salvar ou atualizar a anotação
     _recuperarAnotacoes();
   }
+
 }
