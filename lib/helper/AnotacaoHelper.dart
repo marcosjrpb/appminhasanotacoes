@@ -67,8 +67,14 @@ class AnotacaoHelper {
       print("Erro ao salvar anotação: $e");
       return null;
     }
-  }
 
+  }
+  Future<int?> removerAnotacap(int id) async {
+    var bancoDados = await db;
+
+   return await bancoDados?.delete(
+        nomeTabela, where: "id= ?",whereArgs: [id]);
+  }
 
   // Método para criar a tabela de anotações
   Future<void> _onCreate(Database db, int version) async {

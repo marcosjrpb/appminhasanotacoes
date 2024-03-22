@@ -78,7 +78,6 @@ class _HomeState extends State<Home> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,67 +98,97 @@ class _HomeState extends State<Home> {
                 child: ListTile(
                   title: RichText(
                     text: TextSpan(
-                        style: TextStyle(
-                          fontSize: 16.0, // Tamanho da fonte padrão
-                          color: Colors.black, // Cor padrão do texto
+                      style: TextStyle(
+                        fontSize: 16.0, // Tamanho da fonte padrão
+                        color: Color(0xFF212121),
+                      ),
+                      children: <TextSpan>[
+                        // Verifica se dataA não é nulo
+                        if (anotacao.dataA != null)
+                          TextSpan(
+                            text:
+                                "Inicial:     ${anotacao.dataC}\nRecente: ${anotacao.dataA}\n",
+                          ),
+                        if (anotacao.dataA == null)
+                          TextSpan(
+                            text: "${anotacao.dataC}\n",
+                          ),
+                        TextSpan(
+                          text: "${anotacao.titulo}",
+                          style: TextStyle(
+                            fontWeight:
+                                FontWeight.bold, // Torna o título em negrito
+                          ),
                         ),
-                        children: <TextSpan>[
-                    // Verifica se dataA não é nulo
-                    if (anotacao.dataA != null)
-                        TextSpan(
-                      text: "${anotacao.dataC} - ${anotacao.dataA}\n",
-                      ),
-                      if(anotacao.dataA == null)
-                        TextSpan(
-                        text: "${anotacao.dataC}\n",
-                      ),
-                  TextSpan(
-                    text: "${anotacao.titulo}",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold, // Torna o título em negrito
+                      ],
                     ),
+                  ),
+                  subtitle: Text("${anotacao.descricao}"),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          _exibirTelacadastro(anotacao: anotacao);
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 16),
+                          child: Icon(
+                            Icons.edit,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return SimpleDialog(
+                                title: Column(
+                                  children: [
+                                    Text("Confirme para apagar!",style: TextStyle(fontSize: 16)),
+                                    SizedBox(height: 10),
+                                    Text("Você está apagando o Item Nº ${anotacao.id.toString()}",style: TextStyle(fontSize: 16)),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop(); // Fecha o diálogo sem apagar
+                                      },
+                                      child: Text('Cancelar'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        _removerAnotacao(anotacao.id);
+                                        Navigator.of(context).pop(); // Fecha o diálogo sem apagar
+                                      },
+                                      child: Text('Confirmar'),
+                                    ),
+
+                                  ],
+
+                                ),
+                              );
+                            },
+                          );
+
+
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 0),
+                          child: Icon(
+                            Icons.remove_circle,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                ],
-              ),
-              ),
-              subtitle: Text("${anotacao.descricao}"),
-              trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-              GestureDetector(
-              onTap: () {
-              _exibirTelacadastro(anotacao: anotacao);
-              },
-              child: Padding(
-              padding: EdgeInsets.only(right: 16),
-              child: Icon(
-              Icons.edit,
-              color: Colors.green,
-              ),
-              ),
-              ),
-              GestureDetector(
-              onTap: () {
-              //todo falta
-              },
-              child: Padding(
-              padding: EdgeInsets.only(right: 0),
-              child: Icon(
-              Icons.remove_circle,
-              color: Colors.redAccent,
-              ),
-              ),
-              ),
-              ],
-              ),
-              ),
               );
             },
           ),
-
         ],
       ),
-
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
@@ -198,7 +227,8 @@ class _HomeState extends State<Home> {
       // anotacaoSelecionada.dataC = anotacao.dataC;
 
       // Atualize apenas a dataA
-      anotacaoSelecionada.dataA = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+      anotacaoSelecionada.dataA =
+          DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
 
       int? resultado = await _db.atualizarAnotacao(anotacaoSelecionada);
     }
@@ -209,5 +239,11 @@ class _HomeState extends State<Home> {
     // Atualize a lista de anotações após salvar ou atualizar a anotação
     _recuperarAnotacoes();
   }
+  _removerAnotacao(int? id)async{
 
+    if(id != null){
+      await _db.removerAnotacap(id!);
+      _recuperarAnotacoes();
+    }
+  }
 }
